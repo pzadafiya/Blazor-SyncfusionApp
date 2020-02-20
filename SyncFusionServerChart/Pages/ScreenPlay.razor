@@ -5,6 +5,8 @@
 @using SyncFusionServerChart.Pages
 @using Newtonsoft.Json
 
+@inject DataHelperService _dataHelper
+
 <h3>Screenplay Dialogue, Broken-down by Gender</h3>
 <div class="col-12">
     <div class="row">
@@ -34,7 +36,8 @@
     {
         await Task.Run(() =>
         {
-            var characters = from charDetail in DataHelper.GetMovieCharacterDetailsList()
+
+            var characters = from charDetail in _dataHelper.GetMovieCharacterDetailsList()
                              join customSelected in men60orMoreDialogueMovies on charDetail.ScriptID equals customSelected
                              select new CharacterDetailsViewModel
                              {
@@ -44,10 +47,10 @@
                                  MenWords = charDetail.MenWords,
                                  WomenWords = charDetail.WomenWords
                              };
-        characterList = characters.OrderByDescending(x => x.MenPecentage).ToList();
+            characterList = characters.OrderByDescending(x => x.MenPecentage).ToList();
 
         });
 
-}
+    }
 
 }

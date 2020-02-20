@@ -1,6 +1,7 @@
 ﻿@page "/ScreenPlayScatter"
 @using Syncfusion.EJ2.Blazor.Charts
 @using Newtonsoft.Json
+@inject DataHelperService _dataHelper
 
 <h3>2,000 Screenplays: Dialogue Broken-down by Gender</h3>
 
@@ -40,7 +41,7 @@
     {
         await Task.Run(() =>
         {
-            var characters = DataHelper.GetMovieCharacterDetailsList();
+            var characters = _dataHelper.GetMovieCharacterDetailsList();
             characterMenList = characters.Where(x => x.MenPecentage >= 50).OrderByDescending(x => x.MenPecentage).ToList();
             characterFemaleList = characters.Where(x => x.MenPecentage < 50).OrderByDescending(x => x.MenPecentage).ToList();
         });

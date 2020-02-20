@@ -30,16 +30,16 @@ namespace SyncFusionServerChart
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSyncfusionBlazor();
-            services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
-            services.AddServerSideBlazor().AddHubOptions(o =>
-            {
-                o.MaximumReceiveMessageSize = 102400000;
-            });
+            //services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
+            //services.AddServerSideBlazor().AddHubOptions(o =>
+            //{
+            //    o.MaximumReceiveMessageSize = 102400000;
+            //});
 
             // Register Syncfusion license
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("MjEyODAyQDMxMzcyZTM0MmUzMGNCYzJscDRpeWNUczc4eG5BVkxKdzlYd3c3c21EWlN5UTk4Zm5tZUw4Slk9");
 
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<DataHelperService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

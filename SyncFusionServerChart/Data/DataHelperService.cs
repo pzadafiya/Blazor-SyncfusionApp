@@ -5,17 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SyncFusionServerChart.Helper
+namespace SyncFusionServerChart.Data
 {
-    public class DataHelper
+    public class DataHelperService
     {
         /// <summary>
         /// read json files and return list of movies along with its character name 
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<CharacterDetailsViewModel> GetMovieCharacterDetailsList()
+        public IEnumerable<CharacterDetailsViewModel> GetMovieCharacterDetailsList()
         {
-            CharacterModel[] CharacterModelData =  JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
+            CharacterModel[] CharacterModelData = JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
             CharacterMetaDataModel[] CharacterMetaDataList = JsonConvert.DeserializeObject<CharacterMetaDataModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/MetaData.json"));
 
             var characters = (from movie in CharacterMetaDataList
@@ -27,7 +27,7 @@ namespace SyncFusionServerChart.Helper
                                   Gender = character.gender,
                                   Gross = movie.gross,
                                   words = character.words
-                              }).GroupBy(s => new { s.ScriptID, s.MovieName,s.Gross })
+                              }).GroupBy(s => new { s.ScriptID, s.MovieName, s.Gross })
                               .Select(g => new CharacterDetailsViewModel
                               {
                                   MovieName = g.Key.MovieName,
@@ -40,6 +40,5 @@ namespace SyncFusionServerChart.Helper
 
             return characters;
         }
-
     }
 }
