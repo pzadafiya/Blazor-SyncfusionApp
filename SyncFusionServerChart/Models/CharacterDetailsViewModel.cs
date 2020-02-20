@@ -12,15 +12,14 @@ namespace SyncFusionServerChart.Models
         public int TotalWords { get; set; }
         public int MenWords { get; set; }
         public int WomenWords { get; set; }
+        public int Gross { get; set; }
         public decimal MenPecentage
         {
             get { return 100 * MenWords / TotalWords; }
-            set { return; }
         }
         public decimal WomenPecentage
         {
             get { return 100 - MenPecentage; }
-            set { return; }
         }
         public string Color { get { return MenPecentage < 50 ? "#FF0000" : "#00BDAE"; } }
     }

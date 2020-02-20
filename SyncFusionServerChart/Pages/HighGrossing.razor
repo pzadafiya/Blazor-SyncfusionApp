@@ -2,7 +2,7 @@
 @using Syncfusion.EJ2.Blazor.Charts
 @using Newtonsoft.Json
 
-<h2>Only High-Grossing Films: Ranked in the Top 2,500 by US Box Office</h2>
+<h3>Only High-Grossing Films: Ranked in the Top 2,500 by US Box Office</h3>
 
 <div class="control-section">
         <EjsChart ID="container" Width="80%">
@@ -38,29 +38,8 @@
     {
         await Task.Run(() =>
         {
-            CharacterModel[] CharacterModelData = JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
-            CharacterMetaDataModel[] CharacterMetaDataList = JsonConvert.DeserializeObject<CharacterMetaDataModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/MetaData.json"));
-
-            var characters = (from movie in CharacterMetaDataList.OrderByDescending(s => s.gross).Take(2500)
-                              join character in CharacterModelData on movie.script_id equals character.script_id
-                              select new
-                              {
-                                  MovieName = movie.title,
-                                  ScriptID = movie.script_id,
-                                  Gender = character.gender,
-                                  words = character.words
-                              }).GroupBy(s => new { s.ScriptID, s.MovieName })
-                                  .Select(g => new CharacterDetailsViewModel
-                                  {
-                                      MovieName = g.Key.MovieName,
-                                      ScriptID = g.Key.ScriptID,
-                                      TotalWords = g.Sum(a => a.words),
-                                      MenWords = g.Where(x => x.Gender == "m").Sum(a => a.words),
-                                      WomenWords = g.Where(x => x.Gender == "f").Sum(a => a.words)
-                                  });
-
+            var characters = DataHelper.GetMovieCharacterDetailsList().OrderByDescending(s => s.Gross).Take(2500);
             characterList = characters.OrderByDescending(x => x.MenPecentage).ToList();
-
 
         });
     }
