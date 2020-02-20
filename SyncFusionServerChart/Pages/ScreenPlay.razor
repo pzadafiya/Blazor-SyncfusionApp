@@ -1,0 +1,69 @@
+﻿@page "/screenplay"
+@inject HttpClient Http
+
+@using Syncfusion.EJ2.Blazor.Charts
+@using SyncFusionServerChart.Pages
+@using Newtonsoft.Json
+
+<h2>Screenplay Dialogue, Broken-down by Gender</h2>
+<div class="col-12">
+    <div class="row">
+        <div class="col-12">
+            <BarChartHorizontal TitleText="Men have 60%+ Dialogue" characterList="@characterList.Where(x=>x.MenPecentage > 60).ToList()"></BarChartHorizontal>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <BarChartHorizontal TitleText="Women have 60%+ Dialogue" characterList="@characterList.Where(x => x.WomenPecentage > 60).ToList()"></BarChartHorizontal>
+        </div>
+        <div class="col-6">
+            <BarChartHorizontal TitleText="Gender Balance, +/- 10%" characterList="@characterList.Where(x=>x.MenPecentage < 60 && x.WomenPecentage < 60 ).ToList()"></BarChartHorizontal>
+        </div>
+    </div>
+</div>
+
+@code {
+
+
+    private int[] men60orMoreDialogueMovies = new int[] { 5534, 7991, 3641, 1421, 3201, 1571, 4365, 1957, 2782, 4853, 4995, 9017, 5521, 5145, 2296, 2961,
+                                                          3816, 7557, 2343, 3816,1028,5423,5528,5424,8653 };
+
+    List<CharacterDetailsViewModel> characterList = new List<CharacterDetailsViewModel>();
+    protected override async Task OnInitializedAsync()
+    {
+
+       await Task.Run(() =>
+       {
+           CharacterModel[] CharacterModelData = JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
+           CharacterMetaDataModel[] CharacterMetaDataList = JsonConvert.DeserializeObject<CharacterMetaDataModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/MetaData.json"));
+
+           var characters = (from movie in CharacterMetaDataList
+                             join customSelected in men60orMoreDialogueMovies on movie.script_id equals customSelected
+                             join character in CharacterModelData on movie.script_id equals character.script_id
+                             select new
+                             {
+                                 MovieName = movie.title,
+                                 ScriptID = movie.script_id,
+                                 Gender = character.gender,
+                                 words = character.words
+                             }).GroupBy(s => new { s.ScriptID, s.MovieName })
+                             .Select(g => new CharacterDetailsViewModel
+                             {
+                                 MovieName = g.Key.MovieName,
+                                 ScriptID = g.Key.ScriptID,
+                                 TotalWords = g.Sum(a => a.words),
+                                 MenWords = g.Where(x => x.Gender == "m").Sum(a => a.words),
+                                 WomenWords = g.Where(x => x.Gender == "f").Sum(a => a.words)
+                             });
+
+       //characterList = characters.Where(x => x.MenPecentage > 60).OrderBy(s=>s.MenPecentage).Take(50).ToList();
+       //characterList = characters.Where(x =>  x.ScriptID == 5534 || x.ScriptID == 2782 || x.ScriptID == 2343 || x.ScriptID == 3816 || x.ScriptID == 7557).ToList();
+       characterList = characters.OrderByDescending(x => x.MenPecentage).ToList();
+       //.OrderBy(s=>s.MenPecentage).Take(50).ToList();
+   });
+
+        //CharacterModel[] CharacterModelData = await Http.GetJsonAsync<CharacterModel[]>("sample-data/Character.json?v12");
+        //CharacterMetaDataModel[] CharacterMetaDataList = await Http.GetJsonAsync<CharacterMetaDataModel[]>("sample-data/MetaData.json?v12")
+    }
+
+}

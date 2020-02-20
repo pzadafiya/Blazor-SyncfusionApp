@@ -1,0 +1,67 @@
+﻿@page "/HighGrossing"
+@using Syncfusion.EJ2.Blazor.Charts
+@using Newtonsoft.Json
+
+<h2>Only High-Grossing Films: Ranked in the Top 2,500 by US Box Office</h2>
+
+<div class="control-section">
+        <EjsChart ID="container" Width="80%">
+            <ChartArea>
+                <ChartAreaBorder Width="0"></ChartAreaBorder>
+            </ChartArea>
+            <ChartPrimaryXAxis Title="Total Words Percentage" Minimum="0" Maximum="100" IsInversed="true">
+                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+            </ChartPrimaryXAxis>
+            <ChartPrimaryYAxis Title="Total Words" RangePadding="ChartRangePadding.Auto">
+                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                <ChartAxisMinorTickLines Width="0"></ChartAxisMinorTickLines>
+            </ChartPrimaryYAxis>
+
+            <ChartLegendSettings Visible="false"></ChartLegendSettings>
+            <ChartTooltipSettings Enable="true" format="Movie Name: <b>${point.text}</b> <br/> Male Words: <b>${point.x}%</b> <br/> Female Words: <b>${point.size}%</b> <br/> Total Words count: <b>${point.y}</b>">
+            </ChartTooltipSettings>
+            <ChartSeriesCollection>
+                <ChartSeries DataSource="@characterList" XName="MenPecentage" YName="TotalWords" Size="WomenPecentage" PointColorMapping="Color" Width="1.5" Type="ChartSeriesType.MultiColoredLine">
+                    <ChartMarker Height="10" Width="10" Shape="ChartShape.Circle">
+                        <ChartDataLabel Name="MovieName"></ChartDataLabel>
+                    </ChartMarker>
+                </ChartSeries>
+            </ChartSeriesCollection>
+        </EjsChart>
+</div>
+@code{
+    string[] color = { "green", "red" };
+
+    List<CharacterDetailsViewModel> characterList = new List<CharacterDetailsViewModel>();
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Run(() =>
+        {
+            CharacterModel[] CharacterModelData = JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
+            CharacterMetaDataModel[] CharacterMetaDataList = JsonConvert.DeserializeObject<CharacterMetaDataModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/MetaData.json"));
+
+            var characters = (from movie in CharacterMetaDataList.OrderByDescending(s => s.gross).Take(2500)
+                              join character in CharacterModelData on movie.script_id equals character.script_id
+                              select new
+                              {
+                                  MovieName = movie.title,
+                                  ScriptID = movie.script_id,
+                                  Gender = character.gender,
+                                  words = character.words
+                              }).GroupBy(s => new { s.ScriptID, s.MovieName })
+                                  .Select(g => new CharacterDetailsViewModel
+                                  {
+                                      MovieName = g.Key.MovieName,
+                                      ScriptID = g.Key.ScriptID,
+                                      TotalWords = g.Sum(a => a.words),
+                                      MenWords = g.Where(x => x.Gender == "m").Sum(a => a.words),
+                                      WomenWords = g.Where(x => x.Gender == "f").Sum(a => a.words)
+                                  });
+
+            characterList = characters.OrderByDescending(x => x.MenPecentage).ToList();
+
+
+        });
+    }
+}

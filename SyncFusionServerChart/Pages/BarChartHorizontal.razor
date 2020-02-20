@@ -1,0 +1,77 @@
+﻿
+@using Syncfusion.EJ2.Blazor.Charts
+@if (characterList == null)
+{
+    <div class="screenPlayListForMenloader"></div>
+}
+else
+{
+    <div class="@loadClass"></div>
+    <div class="@loadDiv control-section">
+        <EjsChart Title="@TitleText">
+            <ChartEvents Loaded="@ChartLoaded"></ChartEvents>
+            <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+            <ChartPrimaryXAxis ValueType="Syncfusion.EJ2.Blazor.Charts.ValueType.Category" Title="Movies">
+                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+            </ChartPrimaryXAxis>
+            <ChartPrimaryYAxis LabelFormat="{value}" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+            </ChartPrimaryYAxis>
+            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+            <ChartSeriesCollection>
+                <ChartSeries DataSource="@characterList" XName="MovieName" YName="MenPecentage" Name="Men" Width=2 Type="ChartSeriesType.StackingBar">
+                    <ChartMarker>
+                        <ChartDataLabel Visible="true" Position="LabelPosition.Top"></ChartDataLabel>
+                    </ChartMarker>
+                </ChartSeries>
+                <ChartSeries DataSource="@characterList" XName="MovieName" YName="WomenPecentage" Name="Women" Width=2 Type="ChartSeriesType.StackingBar">
+                    <ChartMarker>
+                        <ChartDataLabel Visible="true" Position="LabelPosition.Top"></ChartDataLabel>
+                    </ChartMarker>
+                </ChartSeries>
+            </ChartSeriesCollection>
+        </EjsChart>
+    </div>
+
+
+
+
+    @code {
+        [Parameter]
+        public string TitleText { get; set; }
+        [Parameter]
+        public List<CharacterDetailsViewModel> characterList { get; set; }
+
+        string loadClass = "screenPlayListForMenloader";
+        string loadDiv = "stockchartdiv";
+
+        public void ChartLoaded()
+        {
+            loadClass = "";
+            loadDiv = "";
+        }
+    }
+
+
+    <style>
+        .screenPlayListForMenloader {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #7a0fff;
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 46%;
+            left: 46%;
+            border-radius: 50%;
+            -webkit-animation: loader 2s linear infinite;
+            animation: loader 2s linear infinite;
+        }
+
+        .stockchartdiv {
+            visibility: hidden;
+        }
+    </style>
+}

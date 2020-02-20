@@ -1,0 +1,68 @@
+﻿@page "/ScreenPlayScatter"
+@using Syncfusion.EJ2.Blazor.Charts
+@using Newtonsoft.Json
+
+<h2>2,000 Screenplays: Dialogue Broken-down by Gender</h2>
+
+<div class="control-section">
+    <EjsChart>
+        <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+        <ChartPrimaryXAxis Minimum="0" Maximum="100" IsInversed="true" Title="Total Words Percentage">
+            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+        </ChartPrimaryXAxis>
+        <ChartPrimaryYAxis Title="Total Words" RangePadding="ChartRangePadding.Auto">
+            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+        </ChartPrimaryYAxis>
+        <ChartTooltipSettings Enable="true" format="Movie Name: <b>${point.text}</b> <br/> Male Words: <b>${point.x}%</b> <br/> Female Words: <b>${point.size}%</b> <br/> Total Words count: <b>${point.y}</b>">
+        </ChartTooltipSettings>
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@characterMenList" Name="Male" XName="MenPecentage" Width="2" Opacity="0.6" YName="TotalWords" Size="WomenPecentage" Type="ChartSeriesType.Scatter">
+                <ChartMarker Height="10" Width="10" Shape="ChartShape.Circle">
+                    <ChartDataLabel Name="MovieName"></ChartDataLabel>
+                </ChartMarker>
+            </ChartSeries>
+            <ChartSeries DataSource="@characterFemaleList" Name="Female" XName="MenPecentage" Width="2" Opacity="0.6" YName="TotalWords" Size="WomenPecentage" Type="ChartSeriesType.Scatter">
+                <ChartMarker Height="10" Width="10" Shape="ChartShape.Diamond">
+                    <ChartDataLabel Name="MovieName"></ChartDataLabel>
+                </ChartMarker>
+            </ChartSeries>
+        </ChartSeriesCollection>
+    </EjsChart>
+</div>
+
+@code{
+
+    List<CharacterDetailsViewModel> characterMenList = new List<CharacterDetailsViewModel>();
+    List<CharacterDetailsViewModel> characterFemaleList = new List<CharacterDetailsViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Run(() =>
+        {
+            CharacterModel[] CharacterModelData = JsonConvert.DeserializeObject<CharacterModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/Character.json"));
+            CharacterMetaDataModel[] CharacterMetaDataList = JsonConvert.DeserializeObject<CharacterMetaDataModel[]>(System.IO.File.ReadAllText("./wwwroot/sample-data/MetaData.json"));
+
+            var characters = (from movie in CharacterMetaDataList
+                              join character in CharacterModelData on movie.script_id equals character.script_id
+                              select new
+                              {
+                                  MovieName = movie.title,
+                                  ScriptID = movie.script_id,
+                                  Gender = character.gender,
+                                  words = character.words
+                              }).GroupBy(s => new { s.ScriptID, s.MovieName })
+                              .Select(g => new CharacterDetailsViewModel
+                              {
+                                  MovieName = g.Key.MovieName,
+                                  ScriptID = g.Key.ScriptID,
+                                  TotalWords = g.Sum(a => a.words),
+                                  MenWords = g.Where(x => x.Gender == "m").Sum(a => a.words),
+                                  WomenWords = g.Where(x => x.Gender == "f").Sum(a => a.words)
+                              });
+
+            characterMenList = characters.Where(x => x.MenPecentage >= 50).OrderByDescending(x => x.MenPecentage).ToList();
+            characterFemaleList = characters.Where(x => x.MenPecentage < 50).OrderByDescending(x => x.MenPecentage).ToList();
+        });
+    }
+}
